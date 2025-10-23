@@ -1,4 +1,18 @@
-import React, { useState, useEffect, useRef } from 'react';
+import { useState, useEffect, useRef } from 'react';
+import { PieChart, Pie, Cell, ResponsiveContainer, Legend, Tooltip } from 'recharts';
+
+interface ChartDataPoint {
+  name: string;
+  value: number;
+  [key: string]: any; // Add index signature for recharts compatibility
+}
+
+interface Message {
+  text: string;
+  isBot: boolean;
+  chartData?: ChartDataPoint[] | null;
+  chartType?: string | null;
+}
 
 export const Chatbot = () => {
   // Configuration
@@ -9,15 +23,18 @@ export const Chatbot = () => {
   const [sessionId] = useState(() => 'user-' + Math.random().toString(36).substr(2, 9));
   
   // State
-  const [messages, setMessages] = useState([]);
+  const [messages, setMessages] = useState<Message[]>([]);
   const [inputValue, setInputValue] = useState('');
   const [isProcessing, setIsProcessing] = useState(false);
   const [isConnected, setIsConnected] = useState(false);
-  const [error, setError] = useState(null);
+  const [error, setError] = useState<string | null>(null);
   const [isTyping, setIsTyping] = useState(false);
   
-  const messagesEndRef = useRef(null);
-  const inputRef = useRef(null);
+  const messagesEndRef = useRef<HTMLDivElement>(null);
+  const inputRef = useRef<HTMLInputElement>(null);
+
+  // Colors for pie chart
+  const CHART_COLORS = ['#8b5cf6', '#ec4899', '#f59e0b', '#10b981', '#3b82f6', '#ef4444', '#14b8a6', '#f97316'];
 
   // Scroll to bottom of messages
   const scrollToBottom = () => {
@@ -96,7 +113,7 @@ export const Chatbot = () => {
   }, []);
 
   // Send message to backend
-  const sendMessage = async (message) => {
+  const sendMessage = async (message: string) => {
     if (isProcessing) return;
     
     setIsProcessing(true);
@@ -123,7 +140,13 @@ export const Chatbot = () => {
       setIsTyping(false);
       
       // Add bot response
-      setMessages(prev => [...prev, { text: data.response, isBot: true }]);
+      setMessages(prev => [...prev, { 
+        text: data.response,
+        isBot: true,
+        chartData: data.chartData || null,
+        chartType: data.chartType || null,
+    }]);
+
 
       // Log collected data if available (for debugging)
       if (data.collectedData) {
@@ -158,10 +181,53 @@ export const Chatbot = () => {
     sendMessage(answer);
   };
 
-  const handleKeyPress = (e) => {
+  const handleKeyPress = (e: React.KeyboardEvent<HTMLInputElement>) => {
     if (e.key === 'Enter' && !isProcessing) {
       handleSend();
     }
+  };
+
+  const renderPieChart = (chartData: ChartDataPoint[]) => {
+    console.log('Rendering pie chart with data:', chartData);
+    if (!chartData || !Array.isArray(chartData) || chartData.length === 0) {
+      console.warn('Invalid or empty chart data');
+      return null;
+    }
+    return (
+      <div className="mt-3 bg-white p-6 rounded-lg border border-gray-200" style={{ minHeight: '450px' }}>
+        <ResponsiveContainer width="100%" height={450} minWidth={300}>
+          <PieChart margin={{ top: 20, right: 20, bottom: 60, left: 20 }}>
+            <Pie
+              data={chartData}
+              cx="50%"
+              cy="45%"
+              labelLine={false}
+              label={false}
+              outerRadius={120}
+              innerRadius={60}
+              fill="#8884d8"
+              dataKey="value"
+              paddingAngle={2}
+            >
+              {chartData.map((_entry, index) => (
+                <Cell key={`cell-${index}`} fill={CHART_COLORS[index % CHART_COLORS.length]} />
+              ))}
+            </Pie>
+            <Tooltip formatter={(value) => `${value}`} />
+            <Legend 
+              verticalAlign="bottom" 
+              align="center"
+              layout="horizontal"
+              wrapperStyle={{
+                paddingTop: 20,
+                paddingBottom: 20,
+                width: '100%'
+              }}
+            />
+          </PieChart>
+        </ResponsiveContainer>
+      </div>
+    );
   };
 
   return (
@@ -208,22 +274,25 @@ export const Chatbot = () => {
             </div>
           )}
 
-          {messages.map((msg, index) => (
-            <div key={index} className={`flex items-start gap-3 ${msg.isBot ? 'flex-row' : 'flex-row-reverse'} animate-fadeIn`}>
-              <div className={`w-10 h-10 rounded-full flex items-center justify-center text-xl flex-shrink-0 ${
-                msg.isBot ? 'bg-gradient-to-br from-purple-500 to-purple-700' : 'bg-gray-300'
-              }`}>
-                {msg.isBot ? '🤖' : '👤'}
-              </div>
-              <div className={`max-w-[70%] px-4 py-3 rounded-2xl whitespace-pre-line ${
-                msg.isBot 
-                  ? 'bg-gray-100 rounded-bl-sm text-left' 
-                  : 'bg-gradient-to-r from-purple-500 to-purple-700 text-white rounded-br-sm'
-              }`}>
-                {msg.text}
-              </div>
-            </div>
-          ))}
+          {messages.map((msg, index) => {
+            return (
+                <div key={index} className={`flex items-start gap-3 ${msg.isBot ? 'flex-row' : 'flex-row-reverse'} animate-fadeIn`}>
+                    <div className={`w-10 h-10 rounded-full flex items-center justify-center text-xl flex-shrink-0 ${
+                        msg.isBot ? 'bg-gradient-to-br from-purple-500 to-purple-700' : 'bg-gray-300'
+                    }`}>
+                        {msg.isBot ? '🤖' : '👤'}
+                    </div>
+                    <div className={`max-w-[70%] px-4 py-3 rounded-2xl whitespace-pre-line ${
+                        msg.isBot 
+                        ? 'bg-gray-100 rounded-bl-sm text-left' 
+                        : 'bg-gradient-to-r from-purple-500 to-purple-700 text-white rounded-br-sm'
+                    }`}>
+                        {msg.text}
+                        {msg.chartData && msg.isBot && msg.chartType === 'pie' && renderPieChart(msg.chartData)}
+                    </div>
+                </div>
+            )
+          })}
 
           {isTyping && (
             <div className="flex items-start gap-3 animate-fadeIn">
@@ -267,7 +336,7 @@ export const Chatbot = () => {
         </div>
       </div>
 
-      <style jsx>{`
+      <style>{`
         @keyframes fadeIn {
           from {
             opacity: 0;
