@@ -231,10 +231,10 @@ export const Chatbot = () => {
   };
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-purple-500 to-purple-700 flex items-center justify-center p-5">
+    <div className="min-h-screen bg-white flex items-center justify-center p-5">
       <div className="w-full max-w-2xl h-[700px] bg-white rounded-3xl shadow-2xl flex flex-col overflow-hidden">
         {/* Header */}
-        <div className="bg-gradient-to-r from-purple-500 to-purple-700 text-white p-5 text-center">
+        <div className="bg-gray-800 text-white p-5 text-center">
           <h1 className="text-xl font-semibold">Financial Advisor</h1>
           <div className="text-xs mt-2 opacity-90">
             <span className={`inline-block w-2 h-2 rounded-full mr-2 ${isConnected ? 'bg-green-400' : 'bg-red-400'}`}></span>
@@ -267,7 +267,7 @@ export const Chatbot = () => {
               <p className="text-gray-600 mb-6">Click the button below to start answering questions</p>
               <button
                 onClick={startConversation}
-                className="bg-gradient-to-r from-purple-500 to-purple-700 text-white px-8 py-3 rounded-full font-semibold hover:shadow-lg hover:-translate-y-0.5 transition-all"
+                className="bg-gray-800 text-white px-8 py-3 rounded-full font-semibold hover:shadow-lg hover:-translate-y-0.5 transition-all"
               >
                 Start Survey
               </button>
@@ -278,7 +278,7 @@ export const Chatbot = () => {
             return (
                 <div key={index} className={`flex items-start gap-3 ${msg.isBot ? 'flex-row' : 'flex-row-reverse'} animate-fadeIn`}>
                     <div className={`w-10 h-10 rounded-full flex items-center justify-center text-xl flex-shrink-0 ${
-                        msg.isBot ? 'bg-gradient-to-br from-purple-500 to-purple-700' : 'bg-gray-300'
+                        msg.isBot ? 'bg-blue-100' : 'bg-gray-300'
                     }`}>
                         {msg.isBot ? '🤖' : '👤'}
                     </div>
@@ -296,7 +296,7 @@ export const Chatbot = () => {
 
           {isTyping && (
             <div className="flex items-start gap-3 animate-fadeIn">
-              <div className="w-10 h-10 rounded-full flex items-center justify-center text-xl flex-shrink-0 bg-gradient-to-br from-purple-500 to-purple-700">
+              <div className="w-10 h-10 rounded-full flex items-center justify-center text-xl flex-shrink-0 bg-blue-100">
                 🤖
               </div>
               <div className="bg-gray-100 px-4 py-3 rounded-2xl rounded-bl-sm">
@@ -328,7 +328,7 @@ export const Chatbot = () => {
             <button
               onClick={handleSend}
               disabled={!isConnected || isProcessing}
-              className="bg-gradient-to-r from-purple-500 to-purple-700 text-white px-6 py-3 rounded-full font-semibold hover:shadow-lg hover:-translate-y-0.5 disabled:opacity-50 disabled:cursor-not-allowed disabled:transform-none transition-all"
+              className="bg-gray-800 text-white px-6 py-3 rounded-full font-semibold hover:shadow-lg hover:-translate-y-0.5 disabled:opacity-50 disabled:cursor-not-allowed disabled:transform-none transition-all"
             >
               Send
             </button>
